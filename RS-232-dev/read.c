@@ -57,7 +57,7 @@ int main()
   utime = seconds * 1000000 + useconds; 
 
   double averU = utime / readNums;
-  printf("Average read takes %f microseconds.\n", averU);
+  printf("Average read takes %f microseconds. Read in %f entries \n", averU, readNums);
   return(0);
 }
 

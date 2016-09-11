@@ -62,8 +62,9 @@ int main()
   remove("result.log");
   fp = fopen("result.log", "ab+");
 
-  uint8_t ch, lch, rdCh = 0; // current char, last char, read char
-  int winPtr, readSize, i, ii, chnlPtr = 0;
+  uint8_t ch=0, lch=0, rdCh=0; // current char, last char, read char
+  int winPtr=0, readSize=0, i=0, ii=0, chnlPtr=0;
+//  printf("winPtr is inited to %d\n", winPtr);
   char infoStr[INFO_STR_SIZE];
   union LT_union_int32_4bytes data;
   int chnls[8];
@@ -77,12 +78,17 @@ int main()
     n = RS232_PollComport(cport_nr, &rdCh, readBytes); 
     if (n != 0)
     {
+//      printf("debug: getting a byte\n");
       readNums ++;
       lch = ch;
       ch = rdCh;
+//      printf("debug: assigning to data uint32\n");
       data.LT_uint32 = 0;
+//      printf("debug: after assigning to data uint32\n");
       if (lch == 59) //;
       {
+        printf("debug: getting a semicolon\n");
+
         readSize = strlen((char*)winBuf);
         memset(infoStr, 0, INFO_STR_SIZE);
         if (readSize != WIN_SIZE)
@@ -91,8 +97,10 @@ int main()
         }
         else
         {
+//          printf("debug: start iterating over 24 bytes\n");
           for (i=0; i<24; i=i+3)
           {
+//            printf("debug: starting assigning bettwen LT_byte and winBuf. i = %d\n", i);
             for (ii=0; i<3; i++)
             {
               data.LT_byte[2-ii] = winBuf[i+ii];
@@ -102,6 +110,7 @@ int main()
             chnls[chnlPtr] = (data.LT_uint32 & 0x38) >> 3;
             chnlCodes[chnlPtr] = (data.LT_uint32 & 0xFFFFC0) >> 6;
             chnlVolts[chnlPtr] = LTC2348_voltage_calculator(chnlCodes[chnlPtr], chnls[chnlPtr]);
+            printf("debug: chnlPtr = %d, chnl = %d, reading = %6f\n", chnlPtr, chnls[chnlPtr], chnlVolts[chnlPtr]);
           }
 
 //          sprintf(infoStr, "read one data seg = %s\n", winBuf); // indicator for a successful read
@@ -114,10 +123,13 @@ int main()
       }
       else
       {
+//        printf("debug: incrementing winPtr, before incrementing winPtr = %d\n", winPtr);
         winPtr++;
       }
-      
+
+//      printf("debug: assiging to winBuf, winPtr = %d, ch = %c\n", winPtr, (char)ch); 
       winBuf[winPtr] = ch;
+//      printf("debug: after assiging to winBuf\n");
     }
   }
   while (1); 

@@ -1,3 +1,4 @@
+
 #ifndef LTC2348_H
 #define LTC2348_H
 

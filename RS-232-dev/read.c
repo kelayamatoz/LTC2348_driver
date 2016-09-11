@@ -8,15 +8,15 @@
 #include "rs232.h"
 #include "LTC_translate.h"
 
-//int process
-#define BUF_SIZE BUF_SIZE
-FILE *fp;
+// int process
+#define BUF_SIZE 8192 
+// FILE *fp;
 
-void exitHandler(int dummy)
-{
-  printf("Exiting the program under Ctrl+C\n");
-  fclose(fp);
-}
+// void exitHandler(int dummy)
+// {
+//   printf("Exiting the program under Ctrl+C\n");
+//   fclose(fp);
+// }
 
 int main()
 {
@@ -38,7 +38,7 @@ int main()
   }
 
   usleep(10000); //sleep for 10 mili to wait before start
-  int lastTracker = 0,
+  int lastTracker = 0;
   double readNums = 0;
   struct timeval start, end;
   long utime, seconds, useconds;
@@ -59,18 +59,19 @@ int main()
 
   // use a rotating buffer to continuously store the read info
   // todo: check memory leakage!
-  remove("result.log");
-  fp = fopen("result.log", "ab+");
+
+//  remove("result.log");
+//  fp = fopen("result.log", "ab+");
   RS232_PollComport(cport_nr, buf, readBytes);
   do
   {
     n = RS232_PollComport(cport_nr, buf, readBytes);
-    if (n + lastTracker >= 8191)
+    if (n + lastTracker >= BUF_SIZE-1)
     {
       int ii;
-      for (int ii = lastTracker - 1; ii > 0; ii --)
+      for (ii = lastTracker - 1; ii > 0; ii --)
       {
-        if (compBuf[ii] == ";")
+        if (compBuf[ii] == 59) //;
         {
           ii ++;
           break;
@@ -82,13 +83,13 @@ int main()
       memset(tmpBuf, 0, cpySize); 
       memcpy(tmpBuf, compBuf+ii, cpySize);
 
-      fprintf(fp, compBuf); 
+ //     fprintf(fp, compBuf); 
 
       memset(compBuf, 0, BUF_SIZE);
       memcpy(compBuf, tmpBuf, cpySize);
       free(tmpBuf);
       memcpy(compBuf+cpySize, buf, n);
-//      
+ 
 //      printf("Saturated the buffer; exiting\n");
 //      printf("read compBuf content = \n");
 //      printf("%s\n", (char*) compBuf);
@@ -111,7 +112,8 @@ int main()
 
   double averU = utime / readNums;
   printf("Average read takes %f microseconds. Read in %f entries \n", averU, readNums);
-  fclose(fp);
+  printf("%s\n", (char*) compBuf);
+//  fclose(fp);
   return(0);
 }
 

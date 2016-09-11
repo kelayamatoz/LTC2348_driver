@@ -16,6 +16,8 @@
 #define VREF 4.096
 #define POW2_18 262143
 #define POW2_17 131072
+#define CHNL_CONFIG 7
+
 
 struct timeval start, end;
 long utime, seconds, useconds;
@@ -24,14 +26,14 @@ FILE *fp;
 
 struct Config_Word_Struct
 {
-  uint8_t LTC2348_CHAN0_CONFIG : 3;
-  uint8_t LTC2348_CHAN1_CONFIG : 3;
-  uint8_t LTC2348_CHAN2_CONFIG : 3;
-  uint8_t LTC2348_CHAN3_CONFIG : 3;
-  uint8_t LTC2348_CHAN4_CONFIG : 3;
-  uint8_t LTC2348_CHAN5_CONFIG : 3;
-  uint8_t LTC2348_CHAN6_CONFIG : 3;
-  uint8_t LTC2348_CHAN7_CONFIG : 3;
+  uint8_t LTC2348_CHAN0_CONFIG : 7;
+  uint8_t LTC2348_CHAN1_CONFIG : 7;
+  uint8_t LTC2348_CHAN2_CONFIG : 7;
+  uint8_t LTC2348_CHAN3_CONFIG : 7;
+  uint8_t LTC2348_CHAN4_CONFIG : 7;
+  uint8_t LTC2348_CHAN5_CONFIG : 7;
+  uint8_t LTC2348_CHAN6_CONFIG : 7;
+  uint8_t LTC2348_CHAN7_CONFIG : 7;
 };
 // Setting input range of all channels - 0V to 0.5 Vref with no gain compression (SS2 = 0, SS1 = 0, SS0 = 1)
 struct Config_Word_Struct CWSTRUCT = { 7, 7, 7, 7, 7, 7, 7, 7};
@@ -63,7 +65,7 @@ int main()
   fp = fopen("result.log", "ab+");
 
   uint8_t ch=0, lch=0, rdCh=0; // current char, last char, read char
-  int winPtr=0, readSize=0, i=0, ii=0, chnlPtr=0;
+  int winPtr=0, readSize=0, i, ii, chnlPtr=0;
 //  printf("winPtr is inited to %d\n", winPtr);
   char infoStr[INFO_STR_SIZE];
   union LT_union_int32_4bytes data;
@@ -107,10 +109,11 @@ int main()
             }
             
             chnlPtr = i/BYTES_PER_CHNL;
+            printf("debug: chnlPtr = %d, i = %d, BYTES_PER_CHNL = %d\n", chnlPtr, i, BYTES_PER_CHNL);
             chnls[chnlPtr] = (data.LT_uint32 & 0x38) >> 3;
             chnlCodes[chnlPtr] = (data.LT_uint32 & 0xFFFFC0) >> 6;
             chnlVolts[chnlPtr] = LTC2348_voltage_calculator(chnlCodes[chnlPtr], chnls[chnlPtr]);
-            printf("debug: chnlPtr = %d, chnl = %d, reading = %6f\n", chnlPtr, chnls[chnlPtr], chnlVolts[chnlPtr]);
+            printf("debug: i = %d, chnlPtr = %d, chnl = %d, reading = %6f\n",i, chnlPtr, chnls[chnlPtr], chnlVolts[chnlPtr]);
           }
 
 //          sprintf(infoStr, "read one data seg = %s\n", winBuf); // indicator for a successful read
